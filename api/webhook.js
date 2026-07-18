@@ -60,6 +60,20 @@ export default async function handler(req, res) {
 
   try {
     switch (event.type) {
+      case 'invoice.payment_succeeded': {
+        const invoice = event.data.object;
+        const amount = formatAmount(invoice.amount_paid, invoice.currency);
+        const customerEmail = invoice.customer_email || 'Unknown customer';
+        const customerName = invoice.customer_name || '';
+        const message =
+          `**New payment received**\n` +
+          `Amount: ${amount}\n` +
+          `Customer: ${customerName ? `${customerName} (${customerEmail})` : customerEmail}\n` +
+          `Invoice: ${invoice.number || invoice.id}`;
+        await sendDiscordMessage(message);
+        break;
+      }
+
       case 'checkout.session.completed': {
         const session = event.data.object;
         const amount = formatAmount(session.amount_total, session.currency);
